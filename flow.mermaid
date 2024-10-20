@@ -1,0 +1,25 @@
+graph TD
+    DB[(Database)]
+    QS[questionService.ts]
+    SQS[selectedQuestionService.ts]
+    UC[useCases/questions.ts]
+    AP[app/page.tsx]
+    FC[FlowComponent.tsx]
+    FD[FormDrawer.tsx]
+    API[/api/questions/route.ts]
+
+    DB -->|Fetch all questions| QS
+    DB -->|Fetch selected questions| SQS
+    QS -->|getAllQuestions| UC
+    SQS -->|dbGetSelectedQuestions| AP
+    UC -->|getAllQuestions| AP
+    AP -->|initialQuestions| FC
+    AP -->|selectedQuestions| FC
+    FC -->|questions prop| FD
+    FD -->|handleFormSubmit| API
+    API -->|POST new question| DB
+    API -->|GET all questions| QS
+
+    style FC fill:#f9f,stroke:#333,stroke-width:4px
+    style AP fill:#bbf,stroke:#333,stroke-width:2px
+    style DB fill:#bfb,stroke:#333,stroke-width:2px

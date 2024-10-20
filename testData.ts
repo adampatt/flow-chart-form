@@ -1,115 +1,94 @@
-interface TestData {
-    id: number;
-    testName: string;
-    testType: string;
-    testDescription: string;
-    testQuestion: string;
-}
+import { TestData } from './types/formTypes';
 
 export const TestData: TestData[] = [
     {
-        id: 1,
-        testName: "Personal Motivation Inquiry",
-        testType: "Interview",
-        testDescription: "These questions aim to understand the candidate's personal traits, values, motivation, and work ethic. Employers want to see how the candidate's personality fits the company culture and role requirements.",
-        testQuestion: "Can you describe a time when you were faced with a major challenge at work and how you handled it?"
+        "name": "Numerical Reasoning Motivation Assessment",
+        "category": "Numerical Reasoning",
+        "description": "This test evaluates how personal traits and motivations translate into decision-making and analytical thinking in numerical contexts.",
+        "question": "Can you describe a time when you used data or numbers to motivate a decision or overcome a challenge?"
     },
     {
-        id: 2,
-        testName: "Long-term Project Endurance Assessment",
-        testType: "Situational Judgment Test",
-        testDescription: "This test evaluates how candidates handle long-term projects and maintain motivation over extended periods.",
-        testQuestion: "You're assigned a year-long project with no immediate results. How do you stay motivated and keep your team engaged?"
+        "name": "Project Motivation and Communication",
+        "category": "Verbal Reasoning",
+        "description": "This test assesses how candidates communicate motivation and keep others engaged during long-term projects that require consistent updates and collaboration.",
+        "question": "How do you maintain effective communication and motivation on a year-long project with no immediate results?"
     },
     {
-        id: 3,
-        testName: "Adversity Response Evaluation",
-        testType: "Behavioral Assessment",
-        testDescription: "This assessment examines how candidates perform under pressure and in the face of adversity.",
-        testQuestion: "Describe a situation where you faced significant obstacles in a project. How did you overcome them?"
+        "name": "Adversity Problem-Solving Test",
+        "category": "Logical Reasoning",
+        "description": "This test examines how well candidates apply logical reasoning to overcome adversity and complex challenges in the workplace.",
+        "question": "Describe a time when you used logical thinking to overcome a significant obstacle in a project."
     },
     {
-        id: 4,
-        testName: "Workplace Personality Profile",
-        testType: "Interview",
-        testDescription: "This interview question helps understand how the candidate is perceived by others in a professional setting.",
-        testQuestion: "How would your previous coworkers describe your personality in the workplace?"
+        "name": "Professional Self-Perception through Numbers",
+        "category": "Numerical Reasoning",
+        "description": "This test evaluates how candidates perceive their professional identity through their numerical or data-based achievements.",
+        "question": "How would you describe your work style and achievements based on measurable performance data?"
     },
     {
-        id: 5,
-        testName: "Task Prioritization Simulation",
-        testType: "Situational Judgment Test",
-        testDescription: "This test evaluates the candidate's ability to manage multiple tasks and prioritize effectively.",
-        testQuestion: "You have three urgent tasks due by the end of the day, but can only complete two. How do you decide which to prioritize and how do you handle the third?"
+        "name": "Task Prioritization under Verbal Constraints",
+        "category": "Verbal Reasoning",
+        "description": "This test assesses how candidates use reasoning and communication to prioritize tasks when under pressure.",
+        "question": "You have three tasks, all due by the end of the day, but can only complete two. How do you communicate your priorities and manage expectations?"
     },
     {
-        id: 6,
-        testName: "Interpersonal Adaptability Assessment",
-        testType: "Behavioral Assessment",
-        testDescription: "This assessment explores how the candidate interacts with diverse personalities in a work environment.",
-        testQuestion: "Describe a situation where you had to work closely with someone whose work style was very different from yours. How did you adapt?"
+        "name": "Interpersonal Communication Flexibility",
+        "category": "Verbal Reasoning",
+        "description": "This test assesses how candidates adapt their communication style when interacting with coworkers who have different work styles or preferences.",
+        "question": "Describe a time when you adjusted your communication style to work more effectively with someone whose approach was different from yours."
     },
     {
-        id: 7,
-        testName: "Feedback Exchange Proficiency",
-        testType: "Interview",
-        testDescription: "This question evaluates the candidate's approach to giving and receiving feedback in a team setting.",
-        testQuestion: "How do you approach giving and receiving constructive feedback in a team setting?"
+        "name": "Effective Feedback Management",
+        "category": "Verbal Reasoning",
+        "description": "This test explores how well candidates manage the exchange of feedback in team settings, focusing on communication and collaboration.",
+        "question": "How do you give and receive feedback in a way that fosters a productive and collaborative team environment?"
     },
     {
-        id: 8,
-        testName: "Conflict Resolution Scenario",
-        testType: "Situational Judgment Test",
-        testDescription: "This test assesses the candidate's ability to mediate conflicts and find resolutions in team settings.",
-        testQuestion: "Two team members are in a heated disagreement about the direction of a project. How would you approach mediating this conflict?"
+        "name": "Conflict Mediation using Logic",
+        "category": "Logical Reasoning",
+        "description": "This test evaluates how candidates use logical thinking to mediate conflicts and resolve disputes in a team setting.",
+        "question": "Two team members are in conflict over the direction of a project. How would you logically approach resolving the situation?"
     },
     {
-        id: 9,
-        testName: "Cross-functional Communication Evaluation",
-        testType: "Behavioral Assessment",
-        testDescription: "This assessment examines how candidates adapt their communication style across different contexts.",
-        testQuestion: "Give an example of how you've successfully communicated complex information to colleagues from different departments or backgrounds."
+        "name": "Cross-Department Communication Skills",
+        "category": "Verbal Reasoning",
+        "description": "This test evaluates how candidates adapt their communication style when working with colleagues from different departments or knowledge backgrounds.",
+        "question": "Can you give an example of how you explained complex information to colleagues from different departments or backgrounds?"
     },
     {
-        id: 10,
-        testName: "Difficult Collaboration Challenge",
-        testType: "Interview",
-        testDescription: "This question explores how candidates handle challenging team dynamics while maintaining project success.",
-        testQuestion: "Tell me about a time when you had to collaborate with a difficult team member. How did you ensure the project was successful?"
+        "name": "Collaboration under Strain",
+        "category": "Verbal Reasoning",
+        "description": "This test examines how candidates manage difficult team dynamics while maintaining open communication and project success.",
+        "question": "Tell me about a time when you had to collaborate with a difficult team member. How did you keep the project on track?"
     },
     {
-        id: 1,
-        testName: "Problem-Solving and Decision-Making Assessment",
-        testType: "Interview",
-        testDescription: "These questions assess how candidates approach complex situations, their analytical abilities, and how they handle decision-making under pressure. The goal is to understand their cognitive flexibility and practical reasoning skills.",
-        testQuestion: "Can you describe a situation where you had to make a quick decision with incomplete information? How did you arrive at your decision?"
+        "name": "Quick Problem-Solving with Limited Information",
+        "category": "Logical Reasoning",
+        "description": "This test evaluates how candidates use logic and reasoning to make decisions quickly in situations with incomplete information.",
+        "question": "Can you describe a situation where you had to make a quick decision with limited information? How did you reason through it?"
     },
     {
-        id: 2,
-        testName: "Problem-Solving and Decision-Making Assessment",
-        testType: "Interview",
-        testDescription: "These questions assess how candidates approach complex situations, their analytical abilities, and how they handle decision-making under pressure. The goal is to understand their cognitive flexibility and practical reasoning skills.",
-        testQuestion: "Tell me about a time when you identified a major problem at work and what steps you took to solve it."
+        "name": "Problem Identification and Solution Strategy",
+        "category": "Logical Reasoning",
+        "description": "This test assesses how candidates approach identifying problems and developing strategies for solving them using logical thinking.",
+        "question": "Tell me about a time when you identified a significant problem at work and what logical steps you took to solve it."
     },
     {
-        id: 3,
-        testName: "Problem-Solving and Decision-Making Assessment",
-        testType: "Interview",
-        testDescription: "These questions assess how candidates approach complex situations, their analytical abilities, and how they handle decision-making under pressure. The goal is to understand their cognitive flexibility and practical reasoning skills.",
-        testQuestion: "How do you approach solving a problem that you've never encountered before?"
+        "name": "Novel Problem-Solving Approach",
+        "category": "Logical Reasoning",
+        "description": "This test evaluates how candidates approach unfamiliar problems by applying logical reasoning and innovative thinking.",
+        "question": "How do you approach solving a problem that you've never encountered before?"
     },
     {
-        id: 4,
-        testName: "Problem-Solving and Decision-Making Assessment",
-        testType: "Interview",
-        testDescription: "These questions assess how candidates approach complex situations, their analytical abilities, and how they handle decision-making under pressure. The goal is to understand their cognitive flexibility and practical reasoning skills.",
-        testQuestion: "Can you give an example of a time when you had multiple solutions to a problem? How did you decide which one to implement?"
+        "name": "Multi-Solution Decision-Making Test",
+        "category": "Logical Reasoning",
+        "description": "This test assesses how candidates evaluate multiple potential solutions and make informed decisions based on logical reasoning.",
+        "question": "Can you give an example of a time when you had multiple solutions to a problem? How did you logically choose the best option?"
     },
     {
-        id: 5,
-        testName: "Problem-Solving and Decision-Making Assessment",
-        testType: "Interview",
-        testDescription: "These questions assess how candidates approach complex situations, their analytical abilities, and how they handle decision-making under pressure. The goal is to understand their cognitive flexibility and practical reasoning skills.",
-        testQuestion: "Describe a time when you had to change your approach in the middle of a project because something unexpected occurred."
+        "name": "Adaptability in Problem-Solving",
+        "category": "Logical Reasoning",
+        "description": "This test examines how well candidates adapt their problem-solving approach when unexpected changes occur.",
+        "question": "Describe a situation where you had to adapt your approach in the middle of a project due to unexpected challenges."
     }
 ]
