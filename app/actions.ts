@@ -5,10 +5,11 @@ import {
   dbMarkWorkoutAsRemoved, 
   dbFetchSelectedWorkoutsByUserId, 
   dbUpdateUserDetails, 
-  insertWorkoutInNextAvailableSlot, 
+  dbInsertWorkoutInNextAvailableSlot, 
   dbInsertSelectedWorkout,
   ValidationError,
-  DatabaseError
+  DatabaseError,
+  dbFetchUserStressScore
 } from './db/services';
 import { z } from 'zod';
 import { SelectedWorkoutSchema, WorkoutSchema, UserSchema } from './zod/types';
@@ -199,13 +200,33 @@ export async function insertWorkoutIntoWeek(prevState: unknown, formData: FormDa
   const workoutId = formData.get('workout_id') as string;
 
   try {
-    const result = await insertWorkoutInNextAvailableSlot(weekNumber, userId, workoutId);
+    const result = await dbInsertWorkoutInNextAvailableSlot(weekNumber, userId, workoutId);
     if (result.success) {
       revalidatePath(`/workoutBuilder/${userId}`);
     }
     return result;
   } catch (error) {
     console.error('Error in insertWorkoutIntoWeek:', error);
+    if (error instanceof ValidationError) {
+      return { success: false, error: `Validation error: ${error}` };
+    } else if (error instanceof DatabaseError) {
+      return { success: false, error: `Database error: ${error}` };
+    } else {
+      return { success: false, error: 'An unexpected error occurred' };
+    }
+  }
+}
+
+export async function getUserStressScore(userId: string): Promise<{ success: boolean; data?: string; error?: string }> {
+  try {
+    const selectedWorkoutsResult = await dbFetchUserStressScore(userId);
+    if (!selectedWorkoutsResult.success || !selectedWorkoutsResult.data) {
+      return { success: false, error: selectedWorkoutsResult.error || 'No selected workouts found' };
+    }
+
+    return selectedWorkoutsResult
+  } catch (error) {
+    console.error('Error in getUserStressScore:', error);
     if (error instanceof ValidationError) {
       return { success: false, error: `Validation error: ${error}` };
     } else if (error instanceof DatabaseError) {

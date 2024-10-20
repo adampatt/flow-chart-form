@@ -140,7 +140,7 @@ export async function dbMarkWorkoutAsRemoved(workout_id: string, user_id: string
   );
 }
 
-export async function insertWorkoutInNextAvailableSlot(weekNumber: number, userId: string, workoutId: string) {
+export async function dbInsertWorkoutInNextAvailableSlot(weekNumber: number, userId: string, workoutId: string) {
   const parsedData = z.object({
     week_number: z.number(),
     user_id: z.string(),
@@ -178,5 +178,19 @@ export async function insertWorkoutInNextAvailableSlot(weekNumber: number, userI
       `;
     },
     'Error inserting workout in next available slot'
+  );
+}
+
+export async function dbFetchUserStressScore(userId: string) {
+  return dbService(
+    async () => {
+      const res = await sql`
+        SELECT fitness_level
+        FROM "user"
+        WHERE user_id = ${userId}
+      `;
+      return res[0].fitness_level;
+    },
+    'Error fetching user stress score'
   );
 }

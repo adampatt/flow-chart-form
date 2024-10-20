@@ -46,7 +46,7 @@ const nodeTypes: Record<FlowNodeType, (props: NodeProps) => JSX.Element> = {
   week: WeekNode,
 };
 
-function setNodesAndEdges(selectedWorkouts: z.infer<typeof SelectedWorkoutSchema>[], userId: string) {
+function setNodesAndEdges(selectedWorkouts: z.infer<typeof SelectedWorkoutSchema>[], userId: string, userStressScore: string) {
   const nodes: Node[] = [];
   const edges: Edge[] = [];
   const handles = ['a', 'b', 'c', 'd'];
@@ -57,7 +57,7 @@ function setNodesAndEdges(selectedWorkouts: z.infer<typeof SelectedWorkoutSchema
   nodes.push({
     id: 'Parent',
     type: 'parent',
-    data: { label: 'Month 1' },
+    data: { userStressScore: userStressScore },
     position: { x: 0, y: -200 },
   });
 
@@ -148,23 +148,23 @@ interface FlowComponentProps {
   workouts: z.infer<typeof WorkoutSchema>[];
   selectedWorkouts: z.infer<typeof SelectedWorkoutSchema>[];
   userID: string;
+  userStressScore: string;
 }
 
-export default function FlowComponent({ workouts, selectedWorkouts, userID }: FlowComponentProps) {
+export default function FlowComponent({ workouts, selectedWorkouts, userID, userStressScore }: FlowComponentProps) {
   const [nodes, setNodes] = useState<Node[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-
-  console.log({ selectedWorkouts, workouts });
 
   const onNodesChange = useCallback((changes: NodeChange[]) => setNodes((nds) => applyNodeChanges(changes, nds)), []);
   const onEdgesChange = useCallback((changes: EdgeChange[]) => setEdges((eds) => applyEdgeChanges(changes, eds)), []);
 
   useEffect(() => {
-    const { nodes, edges } = setNodesAndEdges(selectedWorkouts, userID);
+    const { nodes, edges } = setNodesAndEdges(selectedWorkouts, userID, userStressScore);
     setNodes(nodes);
     setEdges(edges);
-  }, [selectedWorkouts, workouts, userID]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedWorkouts, workouts, userID, userStressScore]);
 
   return (
     <div className="h-screen w-full flex">
