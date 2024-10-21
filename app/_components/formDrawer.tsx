@@ -1,16 +1,17 @@
 'use client';
 
-import { useMemo, useState } from 'react';
-import { useForm, Controller } from 'react-hook-form';
+import { useMemo } from 'react';
+import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useFormState } from 'react-dom';
-import { WorkoutSchema, WorkoutType } from '../zod/types';
+import { WorkoutSchema, WorkoutType, SelectWorkoutFormSchema, SelectWorkoutSchema } from '../zod/types';
 import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { insertWorkoutIntoWeek } from '../actions';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Heart, Ruler, Mountains, Smiley, Watch, ArrowFatRight, X } from '@phosphor-icons/react';
+import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form';
 
 interface FormDrawerProps {
   isDrawerOpen: boolean;
@@ -36,33 +37,34 @@ const workoutTypeColors: Record<WorkoutType, { border: string; background: strin
 };
 
 export default function FormDrawer({ isDrawerOpen, setIsDrawerOpen, workouts, userID }: FormDrawerProps) {
-  const { control, watch, setValue, handleSubmit } = useForm();
-  const watchTestCategory = watch('category');
-  const handleWorkoutTypeChange = (value: string) => {
-    setValue('workoutType', value);
-  };
+  const form = useForm<z.infer<typeof SelectWorkoutFormSchema>>({
+    resolver: zodResolver(SelectWorkoutFormSchema),
+    defaultValues: {
+      week_number: '',
+      category: 'threshold',
+      workout_id: '',
+    },
+  });
 
   const workoutTypes = useMemo(() => {
     return Array.from(new Set(workouts?.map((workout) => workout.type)));
-  }, []);
+  }, [workouts]);
 
   const filteredWorkouts = useMemo(() => {
-    if (!watchTestCategory) return workouts;
-    return workouts.filter((workout) => workout.type === watchTestCategory);
-  }, [watchTestCategory, workouts]);
+    const category = form.watch('category');
+    if (!category) return workouts;
+    return workouts.filter((workout) => workout.type === category);
+  }, [form.watch('category'), workouts]);
 
-  const [state, formAction] = useFormState(insertWorkoutIntoWeek, null);
-  const [selectedWorkoutName, setSelectedWorkoutName] = useState<string>('');
+  async function onSubmit(data: z.infer<typeof SelectWorkoutFormSchema>) {
+    const transformedData: z.infer<typeof SelectWorkoutSchema> = {
+      week_number: Number(data.week_number),
+      user_id: userID,
+      workout_id: data.workout_id,
+    };
 
-  const onSubmit = handleSubmit((data) => {
-    console.log('onSubmitData', data);
-    const formData = new FormData();
-    formData.append('user_id', userID);
-    formData.append('week_number', data.weekNumber);
-    formData.append('workout_id', data.workout_id);
-
-    formAction(formData);
-  });
+    await insertWorkoutIntoWeek(transformedData);
+  }
 
   return (
     <div className="relative min-h-screen">
@@ -97,134 +99,119 @@ export default function FormDrawer({ isDrawerOpen, setIsDrawerOpen, workouts, us
               <X size={26} />
             </Button>
           </div>
-          <p className="text-muted-foreground mb-6">Choose the type of workout you want, then select a specific a specific one</p>
-          <form
-            onSubmit={onSubmit}
-            className="space-y-4"
-          >
-            <div className="space-y-2">
-              <label
-                htmlFor="week_number"
-                className="text-sm font-medium"
-              >
-                Week number
-              </label>
-              <Controller
-                name="weekNumber"
-                control={control}
-                render={({ field }) => (
-                  <Select onValueChange={field.onChange}>
-                    <SelectTrigger id="week_number">
-                      <SelectValue placeholder="Select a week" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {[1, 2, 3, 4].map((week) => (
-                        <SelectItem
-                          key={week}
-                          value={String(week)}
-                        >
-                          Week {week}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-              />
-            </div>
-            <div className="space-y-2">
-              <label
-                htmlFor="workoutType"
-                className="text-sm font-medium"
-              >
-                Workout Type
-              </label>
-              <Controller
-                name="category"
-                control={control}
-                rules={{ required: 'Workout Type is required' }}
-                render={({ field }) => (
-                  <RadioGroup
-                    onValueChange={(value) => {
-                      field.onChange(value);
-                      handleWorkoutTypeChange(value);
-                    }}
-                    className="grid grid-cols-3 gap-2"
-                  >
-                    {workoutTypes.map((type) => {
-                      return (
-                        <div key={type}>
-                          <RadioGroupItem
-                            value={type}
-                            id={`workout_type_${type}`}
-                            className="peer sr-only"
-                          />
-                          <Label
-                            htmlFor={`workout_type_${type}`}
-                            className={`flex flex-col items-center justify-between rounded-md px-2 py-3 hover:bg-accent hover:text-accent-foreground cursor-pointer
-                              ${
-                                field.value === type
-                                  ? `${workoutTypeColors[type].border} border-4 ${workoutTypeColors[type].background} bg-opacity-30`
-                                  : 'border border-muted'
-                              }`}
-                          >
-                            {workoutTypeIcons[type]}
-
-                            <span className="mt-1 text-sm font-medium text-gray-700">{type}</span>
-                          </Label>
-                        </div>
-                      );
-                    })}
-                  </RadioGroup>
-                )}
-              />
-            </div>
-            <div className="space-y-2">
-              <label
-                htmlFor="workout"
-                className="text-sm font-medium"
-              >
-                Workout
-              </label>
-              <Controller
-                name="workout_id"
-                control={control}
-                rules={{ required: 'Workout is required' }}
-                render={({ field }) => (
-                  <Select
-                    onValueChange={(value) => {
-                      field.onChange(value);
-                      const selectedWorkout = filteredWorkouts.find((w) => w.workout_id === value);
-                      setSelectedWorkoutName(selectedWorkout ? selectedWorkout.name : '');
-                    }}
-                    disabled={!watchTestCategory}
-                  >
-                    <SelectTrigger id="workout">
-                      <SelectValue placeholder="Select workout">{selectedWorkoutName || 'Select workout'}</SelectValue>
-                    </SelectTrigger>
-                    <SelectContent>
-                      {filteredWorkouts.map((workout) => (
-                        <SelectItem
-                          key={workout.workout_id}
-                          value={workout.workout_id}
-                        >
-                          <div className="gap-y-2 flex flex-col">
-                            <p className="font-bold">{workout.name}</p>
-                            <p className="text-sm text-gray-700">{workout.description}</p>
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-              />
-            </div>
-            <Button
-              type="submit"
-              className="w-full font-bold"
+          <p className="text-muted-foreground mb-6">Choose the type of workout you want, then select a specific one</p>
+          <Form {...form}>
+            <form
+              onSubmit={form.handleSubmit(onSubmit)}
+              className="space-y-4"
             >
-              Add to your training plan
-            </Button>
-          </form>
+              <FormField
+                control={form.control}
+                name="week_number"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Week number</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a week" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {[1, 2, 3, 4].map((week) => (
+                          <SelectItem
+                            key={week}
+                            value={String(week)}
+                          >
+                            Week {week}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="category"
+                render={({ field }) => (
+                  <FormItem className="space-y-2">
+                    <FormLabel>Workout Type</FormLabel>
+                    <FormControl>
+                      <RadioGroup
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                        className="grid grid-cols-3 gap-2"
+                      >
+                        {workoutTypes.map((type) => (
+                          <div key={type}>
+                            <RadioGroupItem
+                              value={type}
+                              id={`workout_type_${type}`}
+                              className="peer sr-only"
+                            />
+                            <Label
+                              htmlFor={`workout_type_${type}`}
+                              className={`flex flex-col items-center justify-between rounded-md px-2 py-3 hover:bg-accent hover:text-accent-foreground cursor-pointer
+                                ${
+                                  field.value === type
+                                    ? `${workoutTypeColors[type].border} border-4 ${workoutTypeColors[type].background} bg-opacity-30`
+                                    : 'border border-muted'
+                                }`}
+                            >
+                              {workoutTypeIcons[type]}
+                              <span className="mt-1 text-sm font-medium text-gray-700">{type}</span>
+                            </Label>
+                          </div>
+                        ))}
+                      </RadioGroup>
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="workout_id"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Workout</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select workout">{form.getValues('category') || 'Select workout'}</SelectValue>
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {filteredWorkouts.map((workout) => (
+                          <SelectItem
+                            key={workout.workout_id}
+                            value={workout.workout_id}
+                          >
+                            <div className="gap-y-2 flex flex-col">
+                              <p className="font-bold">{workout.name}</p>
+                              <p className="text-sm text-gray-700">{workout.description}</p>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </FormItem>
+                )}
+              />
+              <Button
+                type="submit"
+                className="w-full font-bold"
+              >
+                Add to your training plan
+              </Button>
+            </form>
+          </Form>
         </div>
       </div>
     </div>

@@ -171,7 +171,6 @@ export default function FlowComponent({ workouts, selectedWorkouts, userID, user
     const { nodes, edges } = setNodesAndEdges(selectedWorkouts, userID, userWorkoutConstraints);
     setNodes(nodes);
     setEdges(edges);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedWorkouts, workouts, userID, userWorkoutConstraints]);
 
   return (

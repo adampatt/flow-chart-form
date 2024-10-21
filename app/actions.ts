@@ -12,7 +12,7 @@ import {
   dbFetchUserWorkoutConstraints
 } from './db/services';
 import { z } from 'zod';
-import { SelectedWorkoutSchema, WorkoutSchema, UserSchema, UserWorkoutConstraints } from './zod/types';
+import { SelectedWorkoutSchema, WorkoutSchema, UserSchema, UserWorkoutConstraints, SelectWorkoutSchema } from './zod/types';
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 
@@ -76,7 +76,6 @@ export async function createUser(userWorkoutFrequencyDetails: z.infer<typeof Use
         };
         return { success: true, data: result.data };
   } catch (error) {
-    console.error('Error in createUser:', error);
     if (error instanceof ValidationError) {
       return { success: false, error: `Validation error: ${error}` };
     } else if (error instanceof DatabaseError) {
@@ -186,15 +185,12 @@ export async function removeWorkoutFromUserPlan(workoutId: string, userId: strin
   }
 }
 
-export async function insertWorkoutIntoWeek(prevState: unknown, formData: FormData): Promise<{ success: boolean; error?: string }> {
-  const weekNumber = parseInt(formData.get('week_number') as string, 10);
-  const userId = formData.get('user_id') as string;
-  const workoutId = formData.get('workout_id') as string;
 
+export async function insertWorkoutIntoWeek(input: z.infer<typeof SelectWorkoutSchema>): Promise<{ success: boolean; error?: string }> {
   try {
-    const result = await dbInsertWorkoutInNextAvailableSlot(weekNumber, userId, workoutId);
+    const result = await dbInsertWorkoutInNextAvailableSlot(input);
     if (result.success) {
-      revalidatePath(`/workoutBuilder/${userId}`);
+      revalidatePath(`/workoutBuilder/${input.user_id}`);
     }
     return result;
   } catch (error) {

@@ -2,7 +2,7 @@
 
 import { z } from 'zod';
 import { sql } from '../lib/neon';
-import { WorkoutSchema, SelectedWorkoutSchema, UserSchema } from '../zod/types';
+import { WorkoutSchema, SelectedWorkoutSchema, UserSchema, SelectWorkoutSchema } from '../zod/types';
 
 
 type CustomErrorConstructor = new (message: string) => Error;
@@ -140,31 +140,21 @@ export async function dbMarkWorkoutAsRemoved(workout_id: string, user_id: string
   );
 }
 
-export async function dbInsertWorkoutInNextAvailableSlot(weekNumber: number, userId: string, workoutId: string) {
-  const parsedData = z.object({
-    week_number: z.number(),
-    user_id: z.string(),
-    workout_id: z.string()
-  }).safeParse({ week_number: weekNumber, user_id: userId, workout_id: workoutId });
-
-  if (!parsedData.success) {
-    throw new ValidationError('Invalid workout data: ' + parsedData.error.message);
-  }
-
+export async function dbInsertWorkoutInNextAvailableSlot(input: z.infer<typeof SelectWorkoutSchema>) {
   return dbService(
     async () => {
       return await sql`
         WITH available_spots AS (
           SELECT position_in_week
           FROM selected_workouts
-          WHERE user_id = ${userId}
-          AND week_number = ${weekNumber}
+          WHERE user_id = ${input.user_id}
+          AND week_number = ${input.week_number}
           AND removed = FALSE
         ),
         max_times_per_week AS (
           SELECT times_per_week
           FROM "user"
-          WHERE user_id = ${userId}
+          WHERE user_id = ${input.user_id}
         ),
         next_position AS (
           SELECT MIN(position_in_week + 1) AS next_position
@@ -172,7 +162,7 @@ export async function dbInsertWorkoutInNextAvailableSlot(weekNumber: number, use
           WHERE gs.position_in_week NOT IN (SELECT position_in_week FROM available_spots)
         )
         INSERT INTO selected_workouts (selected_id, user_id, workout_id, week_number, position_in_week)
-        SELECT gen_random_uuid(), ${userId}, ${workoutId}, ${weekNumber}, (SELECT next_position FROM next_position)
+        SELECT gen_random_uuid(), ${input.user_id}, ${input.workout_id}, ${input.week_number}, (SELECT next_position FROM next_position)
         WHERE (SELECT COUNT(*) FROM available_spots) < (SELECT times_per_week FROM max_times_per_week)
         RETURNING *;
       `;

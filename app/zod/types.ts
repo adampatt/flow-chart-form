@@ -51,3 +51,15 @@ export const defaultStressScore: StressScore = {
   intermediate: 40,
   advanced: 50,
 };
+
+export const SelectWorkoutFormSchema = z.object({
+  week_number: z.string(),
+  category: z.enum(['threshold', 'long', 'steady', 'hills', 'tempo']),
+  workout_id: z.string(),
+});
+
+export const SelectWorkoutSchema = z.object({
+  week_number: z.number(),
+  user_id: z.string().uuid(),
+  workout_id: z.string(),
+});
