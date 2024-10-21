@@ -1,8 +1,4 @@
-- Allow them to add and remove workouts for each grouping, the add is the final node in the workout is displayed number of workouts is not enough for that week
-- The path of selected workouts lights up red if there is not number of selected workouts does equal value created. A popover appears on the red one with a value
-- Fix .env variable
-- Fix colours in the flow (theme)
-- deploy
+-
 - Use form for all
 - Form default values, set for started form to medium and four days. 
 - reset form values in drawer component

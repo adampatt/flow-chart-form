@@ -9,11 +9,10 @@ import longRunNode from './nodes/longRunNode';
 import ParentNode from './nodes/parentNode';
 import FormDrawer from './formDrawer';
 import { z } from 'zod';
-import { FlowNodeType, SelectedWorkoutSchema, WorkoutSchema } from '../zod/types';
+import { FlowNodeType, SelectedWorkoutSchema, UserWorkoutConstraints, WorkoutSchema } from '../zod/types';
 import tempoRunNode from './nodes/tempoRunNode';
 import ThresholdRunNode from './nodes/thresholdRunNode';
 import WeekNode from './nodes/weekNode';
-import { Stream } from 'stream';
 
 function nodePosition(weekNumber: number, nodeIndex: number): { x: number; y: number } {
   const parentX = 0;
@@ -46,18 +45,21 @@ const nodeTypes: Record<FlowNodeType, (props: NodeProps) => JSX.Element> = {
   week: WeekNode,
 };
 
-function setNodesAndEdges(selectedWorkouts: z.infer<typeof SelectedWorkoutSchema>[], userId: string, userStressScore: string) {
+function setNodesAndEdges(
+  selectedWorkouts: z.infer<typeof SelectedWorkoutSchema>[],
+  userId: string,
+  userConstraints: z.infer<typeof UserWorkoutConstraints>,
+) {
   const nodes: Node[] = [];
   const edges: Edge[] = [];
   const handles = ['a', 'b', 'c', 'd'];
 
   const groupedData: { [key: number]: z.infer<typeof SelectedWorkoutSchema>[] } = {};
 
-  // Add parent node
   nodes.push({
     id: 'Parent',
     type: 'parent',
-    data: { userStressScore: userStressScore },
+    data: { userStressScore: userConstraints.fitness_level },
     position: { x: 0, y: -200 },
   });
 
@@ -70,22 +72,27 @@ function setNodesAndEdges(selectedWorkouts: z.infer<typeof SelectedWorkoutSchema
     }
 
     Object.entries(groupedData).forEach(([weekNumber, categoryNodes], index) => {
-      const weekNum = parseInt(weekNumber);
-      const weekNodeId = `week-${weekNum}`;
+      const parsedWeekNumber = parseInt(weekNumber);
+      const weekNodeId = `week-${parsedWeekNumber}`;
 
       // Calculate total stress for the week
-      const totalStress = categoryNodes.reduce((sum, workout) => sum + workout.stress!, 0);
+      const weeklyTotalStress = categoryNodes.reduce((sum, workout) => sum + workout.stress!, 0);
+
+      // Determine the background color based on the condition
+      const weekWorkoutCountFull = categoryNodes.length < userConstraints.times_per_week;
 
       // Add week node
       nodes.push({
         id: weekNodeId,
         type: 'week',
         data: {
-          weekNumber: weekNum,
-          totalStress,
+          weekNumber: parsedWeekNumber,
+          weeklyTotalStress,
           usedHandles: ['out'],
+          total_times_per_week: userConstraints.times_per_week,
+          weekWorkoutCountFull,
         },
-        position: nodePosition(weekNum, -1),
+        position: nodePosition(parsedWeekNumber, -1),
       });
 
       // Connect parent to week node
@@ -96,12 +103,13 @@ function setNodesAndEdges(selectedWorkouts: z.infer<typeof SelectedWorkoutSchema
         sourceHandle: handles[index],
         targetHandle: 'in',
         type: 'smoothstep',
-        style: { strokeWidth: 2, stroke: 'black' },
+        style: { strokeWidth: 4, stroke: 'black' },
       });
 
+      //Get the value of how many per week here and insert it into the category node use it in the edge
       categoryNodes.forEach((workout, nodeIndex: number) => {
-        const nodeId = `node-${weekNum}-${nodeIndex}`;
-        const edgeId = `edge-${weekNum}-${nodeIndex}`;
+        const nodeId = `node-${parsedWeekNumber}-${nodeIndex}`;
+        const edgeId = `edge-${parsedWeekNumber}-${nodeIndex}`;
 
         nodes.push({
           id: nodeId,
@@ -116,7 +124,7 @@ function setNodesAndEdges(selectedWorkouts: z.infer<typeof SelectedWorkoutSchema
             userId: userId,
             selected_id: workout.selected_id,
           },
-          position: nodePosition(weekNum, nodeIndex),
+          position: nodePosition(parsedWeekNumber, nodeIndex),
         });
 
         if (nodeIndex === 0) {
@@ -126,16 +134,16 @@ function setNodesAndEdges(selectedWorkouts: z.infer<typeof SelectedWorkoutSchema
             source: weekNodeId,
             target: nodeId,
             type: 'smoothstep',
-            style: { strokeWidth: 2, stroke: 'black' },
+            style: { strokeWidth: 4, stroke: weekWorkoutCountFull ? '#ef4444' : '#262626' },
           });
         } else {
-          const sourceNodeId = `node-${weekNum}-${nodeIndex - 1}`;
+          const sourceNodeId = `node-${parsedWeekNumber}-${nodeIndex - 1}`;
           edges.push({
             id: edgeId,
             source: sourceNodeId,
             target: nodeId,
             type: 'smoothstep',
-            style: { strokeWidth: 2, stroke: 'black' },
+            style: { strokeWidth: 4, stroke: weekWorkoutCountFull ? '#ef4444' : '#262626' },
           });
         }
       });
@@ -148,10 +156,10 @@ interface FlowComponentProps {
   workouts: z.infer<typeof WorkoutSchema>[];
   selectedWorkouts: z.infer<typeof SelectedWorkoutSchema>[];
   userID: string;
-  userStressScore: string;
+  userWorkoutConstraints: z.infer<typeof UserWorkoutConstraints>;
 }
 
-export default function FlowComponent({ workouts, selectedWorkouts, userID, userStressScore }: FlowComponentProps) {
+export default function FlowComponent({ workouts, selectedWorkouts, userID, userWorkoutConstraints }: FlowComponentProps) {
   const [nodes, setNodes] = useState<Node[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -160,11 +168,11 @@ export default function FlowComponent({ workouts, selectedWorkouts, userID, user
   const onEdgesChange = useCallback((changes: EdgeChange[]) => setEdges((eds) => applyEdgeChanges(changes, eds)), []);
 
   useEffect(() => {
-    const { nodes, edges } = setNodesAndEdges(selectedWorkouts, userID, userStressScore);
+    const { nodes, edges } = setNodesAndEdges(selectedWorkouts, userID, userWorkoutConstraints);
     setNodes(nodes);
     setEdges(edges);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedWorkouts, workouts, userID, userStressScore]);
+  }, [selectedWorkouts, workouts, userID, userWorkoutConstraints]);
 
   return (
     <div className="h-screen w-full flex">

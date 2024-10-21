@@ -9,10 +9,10 @@ import {
   dbInsertSelectedWorkout,
   ValidationError,
   DatabaseError,
-  dbFetchUserStressScore
+  dbFetchUserWorkoutConstraints
 } from './db/services';
 import { z } from 'zod';
-import { SelectedWorkoutSchema, WorkoutSchema, UserSchema } from './zod/types';
+import { SelectedWorkoutSchema, WorkoutSchema, UserSchema, UserWorkoutConstraints } from './zod/types';
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 
@@ -61,28 +61,20 @@ const getStressScore = (fitnessLevel: z.infer<typeof UserSchema>['fitness_level'
     }
   };
 
-export async function createUser(prevState: any, formData: FormData): Promise<{ success: boolean; data?: z.infer<typeof UserSchema>; error?: string }> {
-  const fitnessLevels: Array<z.infer<typeof UserSchema>['fitness_level']> = ['beginner', 'intermediate', 'advanced'];
-  const rawFitnessLevel = formData.get('fitness_level') as string;
-  const rawWorkoutTimesPerWeek = formData.get('workout_times_per_week') as string;
-
-  const fitnessLevelIndex = parseInt(rawFitnessLevel, 10);
-  const fitnessLevel = fitnessLevels[fitnessLevelIndex]; 
-  const workoutTimesPerWeek = parseInt(rawWorkoutTimesPerWeek, 10);
-
+export async function createUser(userWorkoutFrequencyDetails: z.infer<typeof UserSchema>):  Promise<{ success: boolean; data?: z.infer<typeof UserSchema>; error?: string }> {
   const userDetails = {
-    fitness_level: fitnessLevel,
-    workout_times_per_week: workoutTimesPerWeek
+    fitness_level: userWorkoutFrequencyDetails.fitness_level,
+    times_per_week: userWorkoutFrequencyDetails.times_per_week
   };
 
   try {
     const result = await dbUpdateUserDetails(userDetails);
     if (result.success && result.data) {
           const stressScore = getStressScore(result.data.fitness_level);
-          await addWorkoutToUserPlan(result.data.id!, stressScore, result.data.workout_times_per_week);
+          await addWorkoutToUserPlan(result.data.id!, stressScore, result.data.times_per_week);
           redirect(`/workoutBuilder/${result.data.id}`);
         };
-        return result;
+        return { success: true, data: result.data };
   } catch (error) {
     console.error('Error in createUser:', error);
     if (error instanceof ValidationError) {
@@ -217,14 +209,15 @@ export async function insertWorkoutIntoWeek(prevState: unknown, formData: FormDa
   }
 }
 
-export async function getUserStressScore(userId: string): Promise<{ success: boolean; data?: string; error?: string }> {
+export async function getUserWorkoutConstraints(userId: string): Promise<{ success: boolean; data?: z.infer<typeof UserWorkoutConstraints>; error?: string }> {
   try {
-    const selectedWorkoutsResult = await dbFetchUserStressScore(userId);
-    if (!selectedWorkoutsResult.success || !selectedWorkoutsResult.data) {
-      return { success: false, error: selectedWorkoutsResult.error || 'No selected workouts found' };
+    const userWorkoutConstraint = await dbFetchUserWorkoutConstraints(userId);
+    if (!userWorkoutConstraint.success || !userWorkoutConstraint.data) {
+      return { success: false, error: userWorkoutConstraint.error || 'No selected workouts found' };
     }
-
-    return selectedWorkoutsResult
+    
+    console.log('userWorkoutConstraint FETCHED DATA', userWorkoutConstraint.data);
+    return userWorkoutConstraint
   } catch (error) {
     console.error('Error in getUserStressScore:', error);
     if (error instanceof ValidationError) {

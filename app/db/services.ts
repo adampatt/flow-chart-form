@@ -87,7 +87,7 @@ export async function dbUpdateUserDetails(userDetails: z.infer<typeof UserSchema
         INSERT INTO "user" (fitness_level, times_per_week)
         VALUES (
           ${parsedUser.data.fitness_level},
-          ${parsedUser.data.workout_times_per_week}
+          ${parsedUser.data.times_per_week}
         )
         RETURNING user_id, fitness_level, times_per_week;
       `;
@@ -95,7 +95,7 @@ export async function dbUpdateUserDetails(userDetails: z.infer<typeof UserSchema
       return {
         id: user.user_id,
         fitness_level: user.fitness_level,
-        workout_times_per_week: user.times_per_week
+        times_per_week: user.times_per_week
       };
     },
     'Error updating user details'
@@ -181,15 +181,15 @@ export async function dbInsertWorkoutInNextAvailableSlot(weekNumber: number, use
   );
 }
 
-export async function dbFetchUserStressScore(userId: string) {
+export async function dbFetchUserWorkoutConstraints(userId: string) {
   return dbService(
     async () => {
       const res = await sql`
-        SELECT fitness_level
+        SELECT fitness_level, times_per_week
         FROM "user"
         WHERE user_id = ${userId}
       `;
-      return res[0].fitness_level;
+      return res[0];
     },
     'Error fetching user stress score'
   );

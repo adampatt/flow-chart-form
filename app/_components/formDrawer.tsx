@@ -27,12 +27,12 @@ const workoutTypeIcons: Record<WorkoutType, React.ReactElement> = {
   tempo: <Watch />,
 };
 
-const workoutTypeColors: Record<WorkoutType, string> = {
-  threshold: 'orange-500',
-  long: 'blue-900',
-  steady: 'green-500',
-  hills: 'red-900',
-  tempo: 'yellow-400',
+const workoutTypeColors: Record<WorkoutType, { border: string; background: string }> = {
+  threshold: { border: 'border-orange-500', background: 'bg-orange-500' },
+  long: { border: 'border-blue-800', background: 'bg-blue-800' },
+  steady: { border: 'border-green-500', background: 'bg-green-500' },
+  hills: { border: 'border-red-900', background: 'bg-red-900' },
+  tempo: { border: 'border-yellow-400', background: 'bg-yellow-400' },
 };
 
 export default function FormDrawer({ isDrawerOpen, setIsDrawerOpen, workouts, userID }: FormDrawerProps) {
@@ -46,7 +46,6 @@ export default function FormDrawer({ isDrawerOpen, setIsDrawerOpen, workouts, us
     return Array.from(new Set(workouts?.map((workout) => workout.type)));
   }, []);
 
-  console.log(workoutTypes.forEach((workout, index) => console.log('D', index, workout)));
   const filteredWorkouts = useMemo(() => {
     if (!watchTestCategory) return workouts;
     return workouts.filter((workout) => workout.type === watchTestCategory);
@@ -152,7 +151,6 @@ export default function FormDrawer({ isDrawerOpen, setIsDrawerOpen, workouts, us
                     className="grid grid-cols-3 gap-2"
                   >
                     {workoutTypes.map((type) => {
-                      const color = workoutTypeColors[type];
                       return (
                         <div key={type}>
                           <RadioGroupItem
@@ -163,9 +161,14 @@ export default function FormDrawer({ isDrawerOpen, setIsDrawerOpen, workouts, us
                           <Label
                             htmlFor={`workout_type_${type}`}
                             className={`flex flex-col items-center justify-between rounded-md px-2 py-3 hover:bg-accent hover:text-accent-foreground cursor-pointer
-                              ${field.value === type ? `border-${color} border-4 bg-${color} bg-opacity-30` : 'border border-muted'}`}
+                              ${
+                                field.value === type
+                                  ? `${workoutTypeColors[type].border} border-4 ${workoutTypeColors[type].background} bg-opacity-30`
+                                  : 'border border-muted'
+                              }`}
                           >
                             {workoutTypeIcons[type]}
+
                             <span className="mt-1 text-sm font-medium text-gray-700">{type}</span>
                           </Label>
                         </div>

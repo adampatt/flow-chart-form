@@ -31,8 +31,12 @@ export const SelectedWorkoutSchema = z.object({
 export const UserSchema = z.object({
   id: z.string().uuid().optional(),
   fitness_level: z.enum(['beginner', 'intermediate', 'advanced']),
-  workout_times_per_week: z.number(),
+  times_per_week: z.number(),
 });
+
+export const FitnessLevel = ['beginner', 'intermediate', 'advanced'] as const;
+
+export const UserWorkoutConstraints = UserSchema.omit({ id: true });
 
 export const StressScoreSchema = z.object({
   beginner: z.number().default(30),

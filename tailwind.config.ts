@@ -7,11 +7,31 @@ const config: Config = {
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
+  safelist: [
+	'border-orange-500',
+	'border-blue-800',
+	'border-green-500',
+	'border-red-900',
+	'border-yellow-400',
+	'bg-orange-500',
+	'bg-blue-800',
+	'bg-green-500',
+	'bg-red-900',
+	'bg-yellow-400',
+  ],
   theme: {
   	extend: {
   		colors: {
-  			background: 'var(--background)',
-  			foreground: 'var(--foreground)'
+  			"success": 'green',
+			"warning": 'orange',
+			"error": 'red',
+			"primary": 'blue',
+			"secondary": 'purple',
+			"threshold": "#f97316",
+			"long": "#1e3a8a",
+			"steady": "#22c55e",
+			"hills": "#7f1d1d",
+			"tempo": "#facc15"
   		},
   		borderRadius: {
   			lg: 'var(--radius)',
@@ -20,6 +40,5 @@ const config: Config = {
   		}
   	}
   },
-  plugins: [require("tailwindcss-animate")],
 };
 export default config;
