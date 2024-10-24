@@ -1,9 +1,19 @@
 'use client';
 
-import { Handle, NodeProps, Position } from '@xyflow/react';
+import { Handle, NodeProps, Position, Node as FlowNode } from '@xyflow/react';
 import CustomNode from './customNode';
+import { NodeDataSchema, FlowNodeType } from '@/app/zod/types';
+import { z } from 'zod';
 
-function HillsDisplayNode({ data }: NodeProps) {
+type NodeData = z.infer<typeof NodeDataSchema>;
+
+// Extend the FlowNode type with our custom data
+type CustomNodeProps = Omit<FlowNode, 'data'> & {
+  data: NodeData;
+  type: FlowNodeType;
+};
+
+function HillsDisplayNode({ data }: NodeProps<CustomNodeProps>) {
   return (
     <div>
       <Handle

@@ -7,18 +7,6 @@ const config: Config = {
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
-  safelist: [
-	'border-orange-500',
-	'border-blue-800',
-	'border-green-500',
-	'border-red-900',
-	'border-yellow-400',
-	'bg-orange-500',
-	'bg-blue-800',
-	'bg-green-500',
-	'bg-red-900',
-	'bg-yellow-400',
-  ],
   theme: {
   	extend: {
   		colors: {

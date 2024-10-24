@@ -1,7 +1,19 @@
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
-import { ReactFlow, Controls, Background, applyNodeChanges, applyEdgeChanges, Node, Edge, NodeChange, EdgeChange, NodeProps } from '@xyflow/react';
+import {
+  ReactFlow,
+  Controls,
+  Background,
+  applyNodeChanges,
+  applyEdgeChanges,
+  Edge,
+  NodeChange,
+  EdgeChange,
+  Node,
+  NodeProps,
+  NodeTypes,
+} from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import steadyRunNode from './nodes/steadyRunNode';
 import HillsDisplayNode from './nodes/hillsNode';
@@ -9,10 +21,21 @@ import longRunNode from './nodes/longRunNode';
 import ParentNode from './nodes/parentNode';
 import FormDrawer from './formDrawer';
 import { z } from 'zod';
-import { FlowNodeType, SelectedWorkoutSchema, UserWorkoutConstraints, WorkoutSchema } from '../zod/types';
 import tempoRunNode from './nodes/tempoRunNode';
 import ThresholdRunNode from './nodes/thresholdRunNode';
 import WeekNode from './nodes/weekNode';
+import {
+  CustomNode,
+  WorkoutNodeSchema,
+  ParentNodeSchema,
+  WeekNodeSchema,
+  SelectedWorkoutSchema,
+  UserWorkoutConstraints,
+  WorkoutSchema,
+} from '../zod/types';
+
+// Define the type using z.infer
+type WorkoutNodeData = z.infer<typeof WorkoutNodeSchema>;
 
 function nodePosition(weekNumber: number, nodeIndex: number): { x: number; y: number } {
   const parentX = 0;
@@ -35,14 +58,15 @@ function nodePosition(weekNumber: number, nodeIndex: number): { x: number; y: nu
   }
 }
 
-const nodeTypes: Record<FlowNodeType, (props: NodeProps) => JSX.Element> = {
-  steady: steadyRunNode,
-  parent: ParentNode,
-  hills: HillsDisplayNode,
-  long: longRunNode,
-  tempo: tempoRunNode,
-  threshold: ThresholdRunNode,
-  week: WeekNode,
+// Update the nodeTypes
+const nodeTypes: NodeTypes = {
+  steady: steadyRunNode as React.ComponentType<NodeProps<WorkoutNodeSchema>>,
+  parent: ParentNode as React.ComponentType<NodeProps<ParentNodeSchema>>,
+  hills: HillsDisplayNode as React.ComponentType<NodeProps<WorkoutNodeSchema>>,
+  long: longRunNode as React.ComponentType<NodeProps<WorkoutNodeSchema>>,
+  tempo: tempoRunNode as React.ComponentType<NodeProps<WorkoutNodeSchema>>,
+  threshold: ThresholdRunNode as React.ComponentType<NodeProps<WorkoutNodeSchema>>,
+  week: WeekNode as React.ComponentType<NodeProps<WeekNodeSchema>>,
 };
 
 function setNodesAndEdges(
@@ -111,19 +135,21 @@ function setNodesAndEdges(
         const nodeId = `node-${parsedWeekNumber}-${nodeIndex}`;
         const edgeId = `edge-${parsedWeekNumber}-${nodeIndex}`;
 
+        const nodeData: WorkoutNodeData = {
+          name: workout.name,
+          description: workout.description,
+          type: workout.type,
+          duration: workout.duration,
+          workout_id: workout.workout_id,
+          stress: workout.stress,
+          user_id: userId,
+          selected_id: workout.selected_id,
+        };
+
         nodes.push({
           id: nodeId,
-          type: workout.type,
-          data: {
-            name: workout.name,
-            description: workout.description,
-            type: workout.type,
-            duration: workout.duration,
-            workout_id: workout.workout_id,
-            stress: workout.stress,
-            userId: userId,
-            selected_id: workout.selected_id,
-          },
+          type: workout.type!,
+          data: nodeData,
           position: nodePosition(parsedWeekNumber, nodeIndex),
         });
 
@@ -160,18 +186,18 @@ interface FlowComponentProps {
 }
 
 export default function FlowComponent({ workouts, selectedWorkouts, userID, userWorkoutConstraints }: FlowComponentProps) {
-  const [nodes, setNodes] = useState<Node[]>([]);
+  const [nodes, setNodes] = useState<CustomNode[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
-  const onNodesChange = useCallback((changes: NodeChange[]) => setNodes((nds) => applyNodeChanges(changes, nds)), []);
+  const onNodesChange = useCallback((changes: NodeChange[]) => setNodes((nds) => applyNodeChanges(changes, nds) as CustomNode[]), []);
   const onEdgesChange = useCallback((changes: EdgeChange[]) => setEdges((eds) => applyEdgeChanges(changes, eds)), []);
 
   useEffect(() => {
     const { nodes, edges } = setNodesAndEdges(selectedWorkouts, userID, userWorkoutConstraints);
-    setNodes(nodes);
+    setNodes(nodes as CustomNode[]);
     setEdges(edges);
-  }, [selectedWorkouts, workouts, userID, userWorkoutConstraints]);
+  }, [selectedWorkouts, userID, userWorkoutConstraints]);
 
   return (
     <div className="h-screen w-full flex">

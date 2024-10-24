@@ -2,15 +2,16 @@
 
 import { Handle, NodeProps, Position } from '@xyflow/react';
 import CustomNode from './customNode';
+import { WorkoutNodeSchema } from '@/app/zod/types';
 
-function steadyRunNode(props: NodeProps) {
+function SteadyRunNode({ data }: NodeProps<WorkoutNodeSchema>) {
   return (
     <>
       <Handle
         type="target"
         position={Position.Top}
       />
-      <CustomNode data={props.data} />
+      <CustomNode data={data} />
       <Handle
         type="source"
         position={Position.Bottom}
@@ -20,4 +21,4 @@ function steadyRunNode(props: NodeProps) {
   );
 }
 
-export default steadyRunNode;
+export default SteadyRunNode;

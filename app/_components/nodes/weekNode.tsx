@@ -2,9 +2,10 @@
 
 import { Handle, NodeProps, Position } from '@xyflow/react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { WeekNodeSchema } from '@/app/zod/types';
 
-function WeekNode({ data }: NodeProps) {
-  const { weekNumber, weeklyTotalStress, usedHandles, total_times_per_week, weekWorkoutCountFull } = data;
+function WeekNode(props: NodeProps<WeekNodeSchema>) {
+  const { weekNumber, weeklyTotalStress, usedHandles, weekWorkoutCountFull } = props.data;
 
   return (
     <>

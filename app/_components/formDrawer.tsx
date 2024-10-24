@@ -12,6 +12,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Heart, Ruler, Mountains, Smiley, Watch, ArrowFatRight, X } from '@phosphor-icons/react';
 import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form';
+import { WorkoutTypeColors } from '../lib/workout';
 
 interface FormDrawerProps {
   isDrawerOpen: boolean;
@@ -21,19 +22,41 @@ interface FormDrawerProps {
 }
 
 const workoutTypeIcons: Record<WorkoutType, React.ReactElement> = {
-  threshold: <Heart />,
-  long: <Ruler />,
-  hills: <Mountains />,
-  steady: <Smiley />,
-  tempo: <Watch />,
-};
-
-const workoutTypeColors: Record<WorkoutType, { border: string; background: string }> = {
-  threshold: { border: 'border-orange-500', background: 'bg-orange-500' },
-  long: { border: 'border-blue-800', background: 'bg-blue-800' },
-  steady: { border: 'border-green-500', background: 'bg-green-500' },
-  hills: { border: 'border-red-900', background: 'bg-red-900' },
-  tempo: { border: 'border-yellow-400', background: 'bg-yellow-400' },
+  threshold: (
+    <Heart
+      size={16}
+      weight="bold"
+      className="text-threshold"
+    />
+  ),
+  long: (
+    <Ruler
+      size={16}
+      weight="bold"
+      className="text-long"
+    />
+  ),
+  hills: (
+    <Mountains
+      size={16}
+      weight="bold"
+      className="text-hills"
+    />
+  ),
+  steady: (
+    <Smiley
+      size={16}
+      weight="bold"
+      className="text-steady"
+    />
+  ),
+  tempo: (
+    <Watch
+      size={16}
+      weight="bold"
+      className="text-tempo"
+    />
+  ),
 };
 
 export default function FormDrawer({ isDrawerOpen, setIsDrawerOpen, workouts, userID }: FormDrawerProps) {
@@ -49,6 +72,12 @@ export default function FormDrawer({ isDrawerOpen, setIsDrawerOpen, workouts, us
   const workoutTypes = useMemo(() => {
     return Array.from(new Set(workouts?.map((workout) => workout.type)));
   }, [workouts]);
+
+  const selectedWorkoutName = useMemo(() => {
+    const workoutId = form.getValues('workout_id');
+    const selectedWorkout = workouts.find((workout) => workout.workout_id === workoutId);
+    return selectedWorkout ? selectedWorkout.name : '';
+  }, [form.getValues('workout_id'), workouts, form.getValues('category')]);
 
   const filteredWorkouts = useMemo(() => {
     const category = form.watch('category');
@@ -158,7 +187,7 @@ export default function FormDrawer({ isDrawerOpen, setIsDrawerOpen, workouts, us
                               className={`flex flex-col items-center justify-between rounded-md px-2 py-3 hover:bg-accent hover:text-accent-foreground cursor-pointer
                                 ${
                                   field.value === type
-                                    ? `${workoutTypeColors[type].border} border-4 ${workoutTypeColors[type].background} bg-opacity-30`
+                                    ? `${WorkoutTypeColors[type].border} border-4 ${WorkoutTypeColors[type].background} bg-opacity-30`
                                     : 'border border-muted'
                                 }`}
                             >
@@ -184,7 +213,7 @@ export default function FormDrawer({ isDrawerOpen, setIsDrawerOpen, workouts, us
                     >
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select workout">{form.getValues('category') || 'Select workout'}</SelectValue>
+                          <SelectValue placeholder="Select workout">{selectedWorkoutName || 'Select workout'}</SelectValue>
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>

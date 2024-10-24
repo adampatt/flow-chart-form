@@ -1,5 +1,1 @@
--
-- Use form for all
-- Form default values, set for started form to medium and four days. 
-- reset form values in drawer component
 - Types tidy up
