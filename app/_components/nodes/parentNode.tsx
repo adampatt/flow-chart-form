@@ -27,13 +27,13 @@ function ParentNode(props: NodeProps<ParentNodeSchema>) {
         type="source"
         position={Position.Bottom}
         id="b"
-        style={{ left: '33%' }}
+        style={{ left: '10%' }}
       />
       <Handle
         type="source"
         position={Position.Bottom}
         id="c"
-        style={{ right: '33%' }}
+        style={{ left: '90%' }}
       />
       <Handle
         type="source"

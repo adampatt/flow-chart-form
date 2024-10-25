@@ -43,16 +43,26 @@ function nodePosition(weekNumber: number, nodeIndex: number): { x: number; y: nu
   const weekSpacing = 600; // Horizontal spacing between weeks
   const nodeSpacing = 300; // Vertical spacing between nodes within a week
 
+  // Adjust x-coordinate calculation
+  let xPosition;
+  if (weekNumber <= 2) {
+    xPosition = parentX + (weekNumber - 2.5) * weekSpacing;
+  } else if (weekNumber === 3) {
+    xPosition = parentX + 1 * weekSpacing; // Move week 3 further right
+  } else {
+    xPosition = parentX + (weekNumber - 2) * weekSpacing; // Adjust weeks 4 and beyond
+  }
+
   if (nodeIndex === -1) {
     // Week node
     return {
-      x: parentX + (weekNumber - 2.5) * weekSpacing, // Center weeks horizontally
+      x: xPosition,
       y: parentY + 150, // Position weeks below the parent
     };
   } else {
     // Workout nodes
     return {
-      x: parentX + (weekNumber - 2.5) * weekSpacing,
+      x: xPosition,
       y: parentY + 400 + nodeIndex * nodeSpacing,
     };
   }
